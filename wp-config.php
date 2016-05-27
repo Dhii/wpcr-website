@@ -25,7 +25,7 @@ if (file_exists($localConfig = __DIR__ . DIRECTORY_SEPARATOR . 'local-config.php
 }
 
 /* Custom WP CONTENT DIRECTORY */
-if (!defined('WP_CONTENT_URL')) {
+if (!defined('WP_CONTENT_DIR')) {
     define( 'WP_CONTENT_DIR', dirname(__FILE__) . '/app' );
 }
 
