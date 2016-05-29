@@ -4,3 +4,4 @@
 /wp/
 /sensitive-config.php
 /local-config.php
+/.htaccess
