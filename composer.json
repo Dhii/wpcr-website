@@ -20,14 +20,20 @@
         {
             "type": "vcs",
             "url": "https://github.com/Dhii/wpcr-website-theme.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Dhii/wpcr-website-reviews-cpt.git"
         }
     ],
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.4",
         "johnpbloch/wordpress": "^4.5",
+        "wp-cli/wp-cli" : "~0.23.1",
         "wpackagist-theme/independent-publisher": ">=1.7",
-        "dhii/wpcr-website-theme-2016": "dev-master"
+        "dhii/wpcr-website-theme-2016": "dev-master",
+        "dhii/wpcr-website-reviews-cpt": "dev-master"
     },
     "require-dev": {
         "wpackagist-plugin/customizer-export-import": ">=0.4"
