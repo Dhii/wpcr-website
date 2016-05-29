@@ -18,10 +18,34 @@
  * @package WordPress
  */
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . 'sensitive-config.php';
+// Directory separator shortcut constant
+define('DS', DIRECTORY_SEPARATOR);
 
-if (file_exists($localConfig = __DIR__ . DIRECTORY_SEPARATOR . 'local-config.php')) {
+/**
+ * Generates a path.
+ * 
+ * @param array $args An array of arguments or a variable number of parameters. Default: array()
+ * @return string
+ */
+function _path($args = array())
+{
+    $actualArgs = (!is_array($args) && func_num_args() > 1)
+            ? func_get_args()
+            : $args;
+    return implode(DS, $actualArgs);
+}
+
+// Load sensitive configuration
+require_once _path(__DIR__, 'sensitive-config.php');
+
+// Load local configuration
+if (file_exists($localConfig = _path(__DIR__, 'local-config.php'))) {
     require_once $localConfig;
+}
+
+// Load Autoloader
+if (file_exists($autoloader = _path(__DIR__, 'vendor', 'autoload.php'))) {
+    require_once $autoloader;
 }
 
 /* Custom WP CONTENT DIRECTORY */
