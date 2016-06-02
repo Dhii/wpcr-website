@@ -347,7 +347,6 @@ function wpcr_customization() {
 INTERACTIVE=0
 VERBOSE=0
 PHASE=1
-RESET=0
 
 while [[ $# > 0 ]]
 do
@@ -376,7 +375,7 @@ do
 		;;
 		# Reset flag
 		-r|--reset)
-			RESET=1
+			PHASE=0
 			shift
 		;;
 	    # default case
@@ -389,18 +388,11 @@ done
 # BEGIN
 #-------------------------------------
 
-if [ $RESET = 1 ]; then
-	logmsg "Hard resetting back to git HEAD"
-	ls | grep -v -e 'wp-cli.local.yml' -e 'install.sh' -e '.git' | xargs rm -rf
-	git reset --hard
-	exit 0
-fi
-
 if [ $INTERACTIVE = 1 ]
 	then logmsg "Interactive mode enabled."
 fi
 
-if [ -f "wp-cli.local.yml" ]
+if [ -f "wp-cli.local.yml" ] || [ -f "wp-cli.yml" ]
 	then logmsg "YAML file found!"
 	else logmsg "YAML file NOT found!"
 fi
@@ -410,6 +402,25 @@ fi
 logmsg "Starting at phase $PHASE"
 
 case "$PHASE" in
+	0) # Reset phase
+		reset=1
+		# interactive is on, show confirmation
+		if [ $INTERACTIVE = 1 ]; then
+			echo -e "Are you sure you want to reset? (y/n) \c"
+			read -e reset_conf
+			# Set $reset depending on user input
+			if [[ $reset_conf = "y" ]]
+				then reset=1
+				else reset=0
+			fi
+		fi
+		# If reset accepted ... well, reset!
+		if [[ $reset = 1 ]]; then
+			logmsg "Hard resetting back to git HEAD"
+			ls | grep -v -e 'wp-cli.local.yml' -e 'wp-cli.yml' -e 'install.sh' -e '.git' | xargs rm -rf
+			git reset --hard
+		fi
+		;;
 	1)
 		divlog "Phase 1: Install Dependencies"
 		composer_install
