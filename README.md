@@ -14,9 +14,17 @@ The script requires some configuration. You have a few options:
 
 ### Option A: Interactive Mode
 
-Running the script as `./install.sh --interactive` or `./install.sh -i` will make the script interactive.
+Running the script as:
 
-This means that the script will prompt you toy enter the required information. You will be required to input the data into your terminal application, as well as allow you to accept/decline various confirmation messages.
+```bash
+./install.sh --interactive
+```
+or
+```bash
+./install.sh -i
+```
+
+This will make the script prompt you to enter the required information as well as allow you to accept/decline various confirmation messages (such as database drop).
 
 ### Option B: YAML file
 
