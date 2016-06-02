@@ -5,3 +5,5 @@
 /sensitive-config.php
 /local-config.php
 /.htaccess
+/wp-cli.local.yml
+/wp-cli.yml
