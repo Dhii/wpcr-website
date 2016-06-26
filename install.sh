@@ -173,7 +173,7 @@ function wpcli_core_config() {
 	logmsg "Removed any existing wp/wp-config.php"
 	rm wp/wp-config.php
 	# Run command
-	wpcli core config $dbname $dbuser $dbpass $dbhost $dbprefix
+	wpcli core config "$dbname" "$dbuser" "$dbpass" "$dbhost" "$dbprefix"
 }
 
 # Runs `wp db create`
@@ -202,7 +202,7 @@ function wpcli_core_install() {
 	# Log generated args
 	logmsg "Prepared args for wpcli core install: '$args'"
 	# Run command
-	wpcli core install $url $title $user $pass $email --skip-email
+	wpcli core install "$url" "$title" "$user" "$pass" "$email" --skip-email
 }
 
 # Gets the home URL.
