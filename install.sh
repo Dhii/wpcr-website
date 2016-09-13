@@ -46,6 +46,7 @@ function showhelp() {
 	echo -e "  ${GREEN}-r, --reset            ${NOC}Resets the directory back to git HEAD via a hard git reset. Retains any existing 'wp-cli.local.yml' file."
 	echo -e "  ${GREEN}-p, --phase  [n]       ${NOC}Starts the installation at phase n."
 	echo -e "  ${GREEN}-h, --help             ${NOC}Shows this message."
+	echo -e "  ${GREEN}-n, --no-clear         ${NOC}Used with -r, prevents clearing of files."
 }
 
 #-------------------------------------
@@ -358,6 +359,7 @@ function site_customization() {
 INTERACTIVE=0
 VERBOSE=0
 PHASE=1
+NO_CLEAR=0
 
 while [[ $# > 0 ]]
 do
@@ -387,6 +389,11 @@ do
 		# Reset flag
 		-r|--reset)
 			PHASE=0
+			shift
+		;;
+		# Prevent clearing
+		-n|--no-clear)
+			NO_CLEAR=1
 			shift
 		;;
 	    # default case
@@ -427,9 +434,12 @@ case "$PHASE" in
 		fi
 		# If reset accepted ... well, reset!
 		if [[ $reset = 1 ]]; then
+                        if [[ $NO_CLEAR = 0 ]]; then
+                            logmsg "Clearing files, leaving config and repo data"
+                            ls | grep -v -e 'wp-cli.local.yml' -e 'wp-cli.yml' -e 'install.sh' -e '.git' | xargs rm -rf
+                        fi
 			logmsg "Hard resetting back to git HEAD"
-			ls | grep -v -e 'wp-cli.local.yml' -e 'wp-cli.yml' -e 'install.sh' -e '.git' | xargs rm -rf
-			git reset --hard
+			[[ $VERBOSE = 0 ]] && git reset --hard --quiet || git reset --hard
 		fi
 		;;
 	1)
