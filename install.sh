@@ -176,7 +176,7 @@ function wpcli_core_config() {
 	# Remove any existing wp/wp-config.php
         local wpconfig="$WP_ROOT/wp-config.php"
         if [ -f "$wpconfig" ];  then
-            rm "$wpconfig" && logmsg "Removed any existing wp/wp-config.php"
+            rm "$wpconfig" && logmsg "Removed any existing $wpconfig"
         fi
 	# Run command
 	wpcli core config $dbname $dbuser $dbpass $dbhost $dbprefix
@@ -258,17 +258,18 @@ function use_root_config() {
 # Prepares the database configuration
 function configure_database() {
 	# Reset any existing wp-config file
-	if [ -f ./wp/wp-config.php ]; then
-		rm ./wp/wp-config.php
+        local wpconfig="$WP_ROOT/wp-config.php"
+	if [ -f "$wpconfig" ]; then
+            rm "$wpconfig"
 	fi
 	# Generate wp-config
 	wpcli_core_config
 	# Check exist code
 	if [ $? = 0 ]; then
-		logmsg "Generated /wp/wp-config.php file!"
+            logmsg "Generated $wpconfig file!"
 	else
-		logmsg "Failed to generated /wp/wp-config.php! Exiting ..."
-		exit 1
+            logmsg "Failed to generate $wpconfig! Exiting ..."
+            exit 1
 	fi
 }
 
@@ -332,9 +333,10 @@ function generate_sensitive_config() {
 
 # Deletes the wp/wp-config.php file
 function delete_wp_config() {
-	# Delete wp-config.php in the /wp/ directory and undo temp rename of root wp-config.php
-	logmsg "Deleting wp/wp-config.php ..."
-	rm wp/wp-config.php
+        local wpconfig="$WP_ROOT/wp-config.php"
+	# Delete wp-config.php in the WP root directory and undo temp rename of root wp-config.php
+	logmsg "Deleting $wpconfig ..."
+	rm "$wpconfig"
 }
 
 # Customizes the installed WordPress for INSTASH
