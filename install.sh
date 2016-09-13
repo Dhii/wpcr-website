@@ -30,6 +30,8 @@ NOC='\033[0m'
 
 # wp-cli executable
 WP="vendor/bin/wp"
+# The path to the WP installation
+WP_ROOT="wp"
 
 #-------------------------------------
 # Help Function
@@ -110,10 +112,10 @@ function wpcli() {
 	if [ $VERBOSE = 1 ]; then
 		debug="--debug"
 		logmsg "Running wp-cli command:"
-		echo "$WP $@ $debug --path='wp'"
+		echo "$WP $@ $debug --path='$WP_ROOT'"
 	fi
 	echo -e "${BLUE}"
-	$WP "$@" $debug --path='wp'
+	$WP "$@" $debug --path="$WP_ROOT"
 	echo -e "${NOC}"
 }
 
