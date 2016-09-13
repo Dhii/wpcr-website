@@ -172,8 +172,10 @@ function wpcli_core_config() {
 	# Log generated args
 	logmsg "Prepared args for wpcli core config: $dbname $dbuser $dbpass $dbhost $dbprefix"
 	# Remove any existing wp/wp-config.php
-	logmsg "Removed any existing wp/wp-config.php"
-	rm wp/wp-config.php
+        local wpconfig="$WP_ROOT/wp-config.php"
+        if [ -f "$wpconfig" ];  then
+            rm "$wpconfig" && logmsg "Removed any existing wp/wp-config.php"
+        fi
 	# Run command
 	wpcli core config $dbname $dbuser $dbpass $dbhost $dbprefix
 }
@@ -233,16 +235,22 @@ function composer_install() {
 # 
 # This allows WP CLI to default to /wp/wp-config.php
 function use_wp_config() {
-	logmsg "Renaming root wp-config.php to wp-config.temp"
-	mv wp-config.php wp-config.temp
+        local wpconfig="wp-config.php"
+        if [ -f "$wpconfig" ]; then
+            logmsg "Renaming root $wpconfig to wp-config.temp"
+            mv "$wpconfig" wp-config.temp
+        fi
 }
 
 # Restores the root wp-config.php file from the wp-config.temp temporary name.
 # 
 # This allows WP CLI to use this config file instead.
 function use_root_config() {
-	logmsg "Renaming root wp-config.temp to wp-config.php"
-	mv wp-config.temp wp-config.php
+        local wpconfig="wp-config.php"
+        if [ -f "$wpconfig" ]; then
+            logmsg "Renaming root wp-config.temp to wp-config.php"
+            mv wp-config.temp "$wpconfig"
+        fi
 }
 
 # Prepares the database configuration
