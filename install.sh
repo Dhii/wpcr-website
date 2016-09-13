@@ -1,24 +1,25 @@
 #!/bin/bash
 #===============================================================================
-# WP CODE REVIEWS - WordPress Site Installer
+# INSTASH - WordPress Site Installer
 # 
 # ENVIRONMENT VARIABLES:
 # 
-# 	WPCR_SITE_URL		The site's root URL
-# 	WPCR_SITE_TITLE		The site's title
-# 	WPCR_ADMIN_USER		The admin username
-# 	WPCR_ADMIN_PASS		The admin password
-# 	WPCR_ADMIN_EMAIL	The admin email
-# 	WPCR_DB_NAME		The database name
-# 	WPCR_DB_USER		The database username
-# 	WPCR_DB_PASS		The database password
-# 	WPCR_DB_HOST		The database host
-# 	WPCR_DB_PREFIX		The database table prefix
+# 	INSTASH_SITE_URL		The site's root URL
+# 	INSTASH_SITE_TITLE		The site's title
+# 	INSTASH_ADMIN_USER		The admin username
+# 	INSTASH_ADMIN_PASS		The admin password
+# 	INSTASH_ADMIN_EMAIL             The admin email
+# 	INSTASH_DB_NAME                 The database name
+# 	INSTASH_DB_USER                 The database username
+# 	INSTASH_DB_PASS                 The database password
+# 	INSTASH_DB_HOST                 The database host
+# 	INSTASH_DB_PREFIX		The database table prefix
 # ===============================================================================
 
 #-------------------------------------
 # Constants
 #-------------------------------------
+ME='instash'
 
 # Text Colors
 YELLOW='\033[1;33m'
@@ -58,7 +59,7 @@ function showhelp() {
 # 	$1 The message to output.
 function logmsg() {
 	if [ $VERBOSE = 1 ]
-		then echo -e "${YELLOW}[wpcr] $1 ${NOC}"
+		then echo -e "${YELLOW}[${ME}] $1 ${NOC}"
 	fi
 }
 
@@ -158,17 +159,17 @@ function handle_var_arg() {
 
 # Runs `wp core config`
 # 
-# Utilizes the WPCR_DB_* ENV or script vars to generate the command.
+# Utilizes the INSTASH_DB_* ENV or script vars to generate the command.
 # If any of the vars is not set, their respective argument is not specificied
 # in the final command allowing the value in the YAML file to be used.
 function wpcli_core_config() {
 	local args=""
 	# Handle args
-	handle_var_arg "WPCR_DB_NAME" "--dbname" "dbname"
-	handle_var_arg "WPCR_DB_USER" "--dbuser" "dbuser"
-	handle_var_arg "WPCR_DB_PASS" "--dbpass" "dbpass"
-	handle_var_arg "WPCR_DB_HOST" "--dbhost" "dbhost"
-	handle_var_arg "WPCR_DB_PREFIX" "--dbprefix" "dbprefix"
+	handle_var_arg "INSTASH_DB_NAME" "--dbname" "dbname"
+	handle_var_arg "INSTASH_DB_USER" "--dbuser" "dbuser"
+	handle_var_arg "INSTASH_DB_PASS" "--dbpass" "dbpass"
+	handle_var_arg "INSTASH_DB_HOST" "--dbhost" "dbhost"
+	handle_var_arg "INSTASH_DB_PREFIX" "--dbprefix" "dbprefix"
 	# Log generated args
 	logmsg "Prepared args for wpcli core config: $dbname $dbuser $dbpass $dbhost $dbprefix"
 	# Remove any existing wp/wp-config.php
@@ -192,17 +193,17 @@ function wpcli_db_create() {
 
 # Runs `wp core install`
 # 
-# Uses the WPCR_SITE_* and WPCR_ADMIN_* ENV/script vars to generate the command.
+# Uses the INSTASH_SITE_* and INSTASH_ADMIN_* ENV/script vars to generate the command.
 # If any of the vars is not set, their respective argument is not specificied
 # in the final command allowing the value in the YAML file to be used.
 function wpcli_core_install() {
 	local args=""
 	# Handle args
-	handle_var_arg "WPCR_SITE_URL" "--url" "url"
-	handle_var_arg "WPCR_SITE_TITLE" "--title" "title"
-	handle_var_arg "WPCR_ADMIN_USER" "--admin_user" "user"
-	handle_var_arg "WPCR_ADMIN_PASS" "--admin_password" "pass"
-	handle_var_arg "WPCR_ADMIN_EMAIL" "--admin_email" "email"
+	handle_var_arg "INSTASH_SITE_URL" "--url" "url"
+	handle_var_arg "INSTASH_SITE_TITLE" "--title" "title"
+	handle_var_arg "INSTASH_ADMIN_USER" "--admin_user" "user"
+	handle_var_arg "INSTASH_ADMIN_PASS" "--admin_password" "pass"
+	handle_var_arg "INSTASH_ADMIN_EMAIL" "--admin_email" "email"
 	# Log generated args
 	logmsg "Prepared args for wpcli core install: '$args'"
 	# Run command
@@ -282,9 +283,9 @@ function create_database() {
 	wpcli db create
 	# Check exist code
 	if [ $? = 0 ] ; then
-		echo "[wpcr] Finished creating database!"
+		echo "[${ME}] Finished creating database!"
 	else
-		echo "[wpcr] Failed to create database! Exiting ..."
+		echo "[${ME}] Failed to create database! Exiting ..."
 		exit 1
 	fi
 }
@@ -335,8 +336,8 @@ function delete_wp_config() {
 	rm wp/wp-config.php
 }
 
-# Customizes the installed WordPress for WPCR
-function wpcr_customization() {
+# Customizes the installed WordPress for INSTASH
+function site_customization() {
 	logmsg "Switching theme ..."
 	wpcli theme activate wpcr-website-theme-2016
 	# Set permalinks and flush rewrite rules
@@ -464,7 +465,7 @@ case "$PHASE" in
 		;&
 	8)
 		divlog "Phase 8: WordPress site customization"
-		wpcr_customization
+		site_customization
 		;&
 	*)
 		logmsg "${GREEN}FINISHED!${NOC}\n"
