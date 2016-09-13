@@ -237,7 +237,7 @@ function get_home_url() {
 #-------------------------------------
 
 function composer_install() {
-    composer install
+    composer install --prefer-dist
     check_exit_code "Done! Dependencies installed." "Failed to install dependencies. Exiting ..."
 }
 
