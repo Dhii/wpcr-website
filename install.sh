@@ -241,7 +241,7 @@ function composer_install() {
     check_exit_code "Done! Dependencies installed." "Failed to install dependencies. Exiting ..."
 }
 
-# Temporarily renames the root wp-config.php file.
+# Temporarily renames the root config file.
 # 
 # This allows WP CLI to default to /wp/wp-config.php
 function use_wp_config() {
@@ -253,7 +253,7 @@ function use_wp_config() {
     fi
 }
 
-# Restores the root wp-config.php file from the wp-config.temp temporary name.
+# Restores the root config file from the temporary file.
 # 
 # This allows WP CLI to use this config file instead.
 function use_root_config() {
