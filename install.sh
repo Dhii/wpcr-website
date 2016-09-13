@@ -33,6 +33,14 @@ NOC='\033[0m'
 WP="vendor/bin/wp"
 # The path to the WP installation
 WP_ROOT="wp"
+# Name of the WP config file
+WP_CONFIG="wp-config.php"
+# Name of WP sensitive config file
+WP_SCONFIG="sensitive-config.php"
+# Name of WP local config file
+WP_LCONFIG="local-config.php"
+# Temporary file prefix
+_TMP=".tmp"
 
 #-------------------------------------
 # Help Function
@@ -174,7 +182,7 @@ function wpcli_core_config() {
 	# Log generated args
 	logmsg "Prepared args for wpcli core config: $dbname $dbuser $dbpass $dbhost $dbprefix"
 	# Remove any existing wp/wp-config.php
-        local wpconfig="$WP_ROOT/wp-config.php"
+        local wpconfig="$WP_ROOT/$WP_CONFIG"
         if [ -f "$wpconfig" ];  then
             rm "$wpconfig" && logmsg "Removed any existing $wpconfig"
         fi
@@ -237,10 +245,11 @@ function composer_install() {
 # 
 # This allows WP CLI to default to /wp/wp-config.php
 function use_wp_config() {
-        local wpconfig="wp-config.php"
+        local wpconfig="$WP_CONFIG"
+        local tmpconfig="${wpconfig}${_TMP}"
         if [ -f "$wpconfig" ]; then
-            logmsg "Renaming root $wpconfig to wp-config.temp"
-            mv "$wpconfig" wp-config.temp
+            logmsg "Renaming root $wpconfig to $tmpconfig"
+            mv "$wpconfig" "$tmpconfig"
         fi
 }
 
@@ -248,17 +257,18 @@ function use_wp_config() {
 # 
 # This allows WP CLI to use this config file instead.
 function use_root_config() {
-        local wpconfig="wp-config.php"
-        if [ -f "$wpconfig" ]; then
-            logmsg "Renaming root wp-config.temp to wp-config.php"
-            mv wp-config.temp "$wpconfig"
+        local wpconfig="$WP_CONFIG"
+        local tmpconfig="${wpconfig}${_TMP}"
+        if [ -f "$tmpconfig" ]; then
+            logmsg "Renaming root $tmpconfig to $wpconfig"
+            mv "$tmpconfig" "$wpconfig"
         fi
 }
 
 # Prepares the database configuration
 function configure_database() {
 	# Reset any existing wp-config file
-        local wpconfig="$WP_ROOT/wp-config.php"
+        local wpconfig="$WP_ROOT/$WP_CONFIG"
 	if [ -f "$wpconfig" ]; then
             rm "$wpconfig"
 	fi
@@ -311,29 +321,32 @@ function update_wp_siteurl() {
 	# Set WordPress Core URL
 	logmsg "Updating 'siteurl' option ..."
 	home=$(get_home_url)
-	wpcli option update siteurl "$home/wp"
+	wpcli option update siteurl "$home/$WP_ROOT"
 }
 
 # Generates the local configuration file
 function generate_local_config() {
 	# Generate local-config.php file
-	logmsg "Generating local-config.php ..."
+        local lconfig="$WP_LCONFIG"
+	logmsg "Generating $lconfig ..."
 	home=$(get_home_url)
-	printf "<?php \n\ndefine('WP_CONTENT_URL', '$home/app');" > local-config.php
+	printf "<?php \n\ndefine('WP_CONTENT_URL', '$home/app');" > "$lconfig"
 	logmsg "Done!"
 }
 
 # Generates the sensitive data configuration file
 function generate_sensitive_config() {
 	# Generate sensitive-config.php file
-	logmsg "Generating sensitive-config.php ..."
-	printf "<?php \n\n" > sensitive-config.php && sed -n 4,31p wp/wp-config.php >> sensitive-config.php
+        local wpconfig="$WP_ROOT/$WP_CONFIG"
+        local sconfig="$WP_SCONFIG"
+	logmsg "Generating $sconfig ..."
+	printf "<?php \n\n" > "$sconfig" && sed -n 4,31p "$wpconfig" >> "$sconfig"
 	logmsg "Done!"
 }
 
 # Deletes the wp/wp-config.php file
 function delete_wp_config() {
-        local wpconfig="$WP_ROOT/wp-config.php"
+        local wpconfig="$WP_ROOT/$WP_CONFIG"
 	# Delete wp-config.php in the WP root directory and undo temp rename of root wp-config.php
 	logmsg "Deleting $wpconfig ..."
 	rm "$wpconfig"
@@ -449,7 +462,7 @@ case "$PHASE" in
 		composer_install
 		;&
 	2)
-		divlog "Phase 2: Generate wp/wp-config.php"
+		divlog "Phase 2: Generate WP Config"
 		use_wp_config
 		configure_database
 		;&
@@ -471,7 +484,7 @@ case "$PHASE" in
 		generate_sensitive_config
 		;&
 	7)
-		divlog "Phase 7: Switch to root wp-config.php"
+		divlog "Phase 7: Switch to root config"
 		delete_wp_config
 		use_root_config
 		;&
