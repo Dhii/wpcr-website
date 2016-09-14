@@ -330,7 +330,7 @@ function configure_database() {
     fi
     # Generate wp-config
     wpcli_core_config
-    failing $? 'Could not drop database' "Generated $wpconfig"
+    failing $? 'Could not configure database' "Generated $wpconfig"
 }
 
 # Creates the database
