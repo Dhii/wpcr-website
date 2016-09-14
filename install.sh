@@ -158,16 +158,22 @@ function gracefulFail() {
 # Passes all function args to wp-cli.
 # Enables debug if VERBOSE is on
 function wpcli() {
-    debug=""
-    if [ $VERBOSE = 1 ]; then
-        debug="--debug"
+    local cmd=$1
+    local plain=${2:-false} # no
+    local debug="--debug"
+    # The command to execute
+    cmd="$WP $cmd --path='$WP_ROOT'"
+    # More detail
+    if [ $plain = false ] && [ $VERBOSE = 1 ]; then
+        cmd="$cmd $debug"
         logmsg "Running wp-cli command:"
-        echo "$WP $@ $debug --path='$WP_ROOT'"
+        echo "$cmd"
     fi
-    echo -e "${BLUE}"
-    $WP "$@" $debug --path="$WP_ROOT"
+    # Running the command, optionally with colour
+    [ "$plain" = false ] && echo -e "${BLUE}"
+    eval "$cmd"
     local result=$?
-    echo -e "${NOC}"
+    [ "$plain" = false ] && echo -e "${NOC}"
 
     return $result
 }
@@ -230,7 +236,7 @@ function wpcli_core_config() {
         rm "$wpconfig" && logmsg "Removed any existing $wpconfig"
     fi
     # Run command
-    wpcli core config $dbname $dbuser $dbpass $dbhost $dbprefix
+    wpcli "core config $dbname $dbuser $dbpass $dbhost $dbprefix"
 
     return $?
 }
@@ -242,7 +248,7 @@ function wpcli_db_create() {
     # Log
     logmsg "Preparing to 'wpcli db create'"
     # Run command
-    wpcli db create
+    wpcli "db create"
     failing $? 'Could not create WP database'
     
     return $?
@@ -264,7 +270,7 @@ function wpcli_core_install() {
     # Log generated args
     logmsg "Prepared args for wpcli core install: '$url $title $user $pass $email --skip-email'"
     # Run command
-    wpcli core install $url $title $user $pass $email --skip-email
+    wpcli "core install $url $title $user $pass $email --skip-email"
 
     return $?
 }
@@ -334,10 +340,10 @@ function create_database() {
         then yes="--yes"
         else yes=""
     fi
-    wpcli db drop $yes
+    wpcli "db drop $yes"
     failing $? 'Could not drop database'
     logmsg "Creating database ..."
-    wpcli db create
+    wpcli "db create"
     failing $? 'Could not create WP' "Created database!"
 
     return 
@@ -356,9 +362,9 @@ function install_wordpress() {
 # Updates the WordPress site URL
 function update_wp_siteurl() {
     # Set WordPress Core URL
-    logmsg "Updating 'siteurl' option ..."
-    home=$(get_home_url)
-    wpcli option update siteurl "$home/$WP_ROOT"
+    local home="$(get_home_url)"
+    logmsg "Updating 'siteurl' option to '$home' ..."
+    wpcli "option update siteurl '$home/$WP_ROOT'"
     failing $? 'Could not update "siteurl" option'
 
     return $?
