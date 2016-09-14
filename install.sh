@@ -158,7 +158,7 @@ function gracefulFail() {
 # Passes all function args to wp-cli.
 # Enables debug if VERBOSE is on
 function wpcli() {
-    local cmd=$1
+    local cmd="$1"
     local plain=${2:-false} # no
     local debug="--debug"
     # The command to execute
