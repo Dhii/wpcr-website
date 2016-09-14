@@ -204,7 +204,6 @@ function handle_var_arg() {
         echo -e "$name: \c"
         read -e value
         local result="$arg=${quote}${value}${quote}"
-        echo "Result: ${result}"
     # If variable exists
     elif [ -n "${!name}" ]; then
         logmsg "Got $name from ENV"
