@@ -194,25 +194,29 @@ function wpcli() {
 # $2 args The arguments string to append to, if the var exists
 # $3 arg  The argument name
 function handle_var_arg() {
-    local name=$1
-    local arg=$2
-    local result_var=$3
+    local name="$1"
+    local arg="$2"
+    local result_var="$3"
+    local quote="$4"
     local result=""
     # If interactive
     if [ $INTERACTIVE = 1 ]; then
         echo -e "$name: \c"
         read -e value
-        local result="$arg=$value"
+        local result="$arg=${quote}${value}${quote}"
+        echo "Result: ${result}"
     # If variable exists
     elif [ -n "${!name}" ]; then
         logmsg "Got $name from ENV"
         local value=${!name}
-        local result="$arg=$value"
+        local result="$arg=${quote}${value}${quote}"
     # If variable does not exist
     else
         logmsg "$name not specified. wp-cli will default to value in YAML file."
     fi
-    eval $result_var="'$result'"
+
+    local assignment="$result_var=\"$result\""
+    eval "$assignment"
 }
 
 # Runs `wp core config`
@@ -223,11 +227,11 @@ function handle_var_arg() {
 function wpcli_core_config() {
     local args=""
     # Handle args
-    handle_var_arg "INSTASH_DB_NAME" "--dbname" "dbname"
-    handle_var_arg "INSTASH_DB_USER" "--dbuser" "dbuser"
-    handle_var_arg "INSTASH_DB_PASS" "--dbpass" "dbpass"
-    handle_var_arg "INSTASH_DB_HOST" "--dbhost" "dbhost"
-    handle_var_arg "INSTASH_DB_PREFIX" "--dbprefix" "dbprefix"
+    handle_var_arg "INSTASH_DB_NAME" "--dbname" "dbname" "'"
+    handle_var_arg "INSTASH_DB_USER" "--dbuser" "dbuser" "'"
+    handle_var_arg "INSTASH_DB_PASS" "--dbpass" "dbpass" "'"
+    handle_var_arg "INSTASH_DB_HOST" "--dbhost" "dbhost" "'"
+    handle_var_arg "INSTASH_DB_PREFIX" "--dbprefix" "dbprefix" "'"
     # Log generated args
     logmsg "Prepared args for wpcli core config: $dbname $dbuser $dbpass $dbhost $dbprefix"
     # Remove any existing wp/wp-config.php
@@ -262,11 +266,11 @@ function wpcli_db_create() {
 function wpcli_core_install() {
     local args=""
     # Handle args
-    handle_var_arg "INSTASH_SITE_URL" "--url" "url"
-    handle_var_arg "INSTASH_SITE_TITLE" "--title" "title"
-    handle_var_arg "INSTASH_ADMIN_USER" "--admin_user" "user"
-    handle_var_arg "INSTASH_ADMIN_PASS" "--admin_password" "pass"
-    handle_var_arg "INSTASH_ADMIN_EMAIL" "--admin_email" "email"
+    handle_var_arg "INSTASH_SITE_URL" "--url" "url" "'"
+    handle_var_arg "INSTASH_SITE_TITLE" "--title" "title" "'"
+    handle_var_arg "INSTASH_ADMIN_USER" "--admin_user" "user" "'"
+    handle_var_arg "INSTASH_ADMIN_PASS" "--admin_password" "pass" "'"
+    handle_var_arg "INSTASH_ADMIN_EMAIL" "--admin_email" "email" "'"
     # Log generated args
     logmsg "Prepared args for wpcli core install: '$url $title $user $pass $email --skip-email'"
     # Run command
