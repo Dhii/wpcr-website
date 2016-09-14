@@ -1,6 +1,6 @@
 
 logmsg "Switching theme ..."
-wpcli 'theme activate wpcr-website-theme-2016"
+wpcli "theme activate 'wpcr-website-theme-2016'"
 # Set permalinks and flush rewrite rules
 failing $? "Could not activate theme"
 
