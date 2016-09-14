@@ -402,16 +402,11 @@ function delete_wp_config() {
 
 # Customizes the installed WordPress for INSTASH
 function site_customization() {
-    logmsg "Switching theme ..."
-    wpcli theme activate wpcr-website-theme-2016
-    # Set permalinks and flush rewrite rules
-    logmsg "Setting permalink structure"
-    wpcli rewrite structure '/%postname%/' --hard
-    logmsg "Flushing rewrite rules"
-    wpcli rewrite flush --hard
-    # Activate plugins
-    logmsg "Activating plugins"
-    wpcli plugin activate --all
+    local siteinstall="install.local.sh"
+    if [ -f "$siteinstall" ]; then
+        logmsg "Running $siteinstall..."
+        . "$PWD/$siteinstall"
+    fi
 }
 
 
