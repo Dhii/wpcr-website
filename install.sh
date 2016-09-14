@@ -336,9 +336,11 @@ function configure_database() {
 # Creates the database
 function create_database() {
     logmsg "Dropping any existing database ..."
-    if [ $INTERACTIVE = 0 ]
-        then yes="--yes"
-        else yes=""
+    local yes
+    if [ $INTERACTIVE = 0 ]; then
+        yes="--yes"
+    else
+        yes=""
     fi
     wpcli "db drop $yes"
     failing $? 'Could not drop database'
@@ -374,8 +376,8 @@ function update_wp_siteurl() {
 function generate_local_config() {
     # Generate local-config.php file
     local lconfig="$WP_LCONFIG"
+    local home="$(get_home_url)"
     logmsg "Generating $lconfig ..."
-    home=$(get_home_url)
     printf "<?php \n\ndefine('WP_CONTENT_URL', '$home/app');" > "$lconfig"
     failing $? 'Could not generate config' "Done!"
 }
