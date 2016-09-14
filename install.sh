@@ -281,9 +281,9 @@ function wpcli_core_install() {
 # If not set, uses wp-cli to get the value from the datbase.
 function get_home_url() {
     local home=""
-    if [[ -z $SITEURL ]]
-        then home=$($WP option get home)
-        else home=$SITEURL
+    if [ -z "$SITEURL" ]
+        then home=`wpcli "option get home" true`
+        else home="$SITEURL"
     fi
     echo "$home"
 }
