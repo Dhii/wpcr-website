@@ -25,6 +25,7 @@ ME='instash'
 YELLOW='\033[1;33m'
 BLUE='\033[1;34m'
 GREEN='\033[0;32m'
+RED='\033[0;91m'
 
 # No Text Color
 NOC='\033[0m'
@@ -72,6 +73,14 @@ function logmsg() {
     fi
 }
 
+function logsuccess() {
+    echo -e "${GREEN}[${ME}] $1 ${NOC}"
+}
+
+function logerror() {
+    echo -e "${RED}[${ME}] ${1} ${NOC}"
+}
+
 # Prints a yellow divider, for logging purposes.
 # Only outputs if VERBOSE is in.
 function div() {
@@ -109,6 +118,37 @@ function check_exit_code() {
     fi
 }
 
+# Print a message in red, and run fail procedures
+# Params:
+#   $1 Whether failing or not
+#   $2 Error message
+#   $3 Success message
+#   $4 If 1, executes graceful fail procedure. Default: 1.
+function failing() {
+    local isSuccess=${1:-'1'}
+    local failMessage=${2:-'Error!'}
+    local successMessage=${3:-'0'}
+    local doFail=${4:-'1'}
+    # All is well
+    if [ $isSuccess -eq 0 ]; then
+        [ "$successMessage" = '0' ] && logmsg "$successMessage"
+        return $isSuccess
+    fi
+    # The message
+    logerror "$failMessage"
+    # Fail gracefully
+    if [[ $doFail = 1 ]]; then
+        gracefulFail
+    fi
+    # Propagating exit code
+    exit $isSuccess
+}
+
+# What to do when something doesn't work out
+function gracefulFail() {
+    use_root_config
+}
+
 #-------------------------------------
 # WP CLI Wrapper Function
 #-------------------------------------
@@ -126,7 +166,10 @@ function wpcli() {
     fi
     echo -e "${BLUE}"
     $WP "$@" $debug --path="$WP_ROOT"
+    local result=$?
     echo -e "${NOC}"
+
+    return $result
 }
 
 #-------------------------------------
@@ -188,6 +231,8 @@ function wpcli_core_config() {
     fi
     # Run command
     wpcli core config $dbname $dbuser $dbpass $dbhost $dbprefix
+
+    return $?
 }
 
 # Runs `wp db create`
@@ -198,6 +243,9 @@ function wpcli_db_create() {
     logmsg "Preparing to 'wpcli db create'"
     # Run command
     wpcli db create
+    failing $? 'Could not create WP database'
+    
+    return $?
 }
 
 # Runs `wp core install`
@@ -214,9 +262,11 @@ function wpcli_core_install() {
     handle_var_arg "INSTASH_ADMIN_PASS" "--admin_password" "pass"
     handle_var_arg "INSTASH_ADMIN_EMAIL" "--admin_email" "email"
     # Log generated args
-    logmsg "Prepared args for wpcli core install: '$args'"
+    logmsg "Prepared args for wpcli core install: '$url $title $user $pass $email --skip-email'"
     # Run command
     wpcli core install $url $title $user $pass $email --skip-email
+
+    return $?
 }
 
 # Gets the home URL.
@@ -238,7 +288,7 @@ function get_home_url() {
 
 function composer_install() {
     composer install --prefer-dist
-    check_exit_code "Done! Dependencies installed." "Failed to install dependencies. Exiting ..."
+    failing $? 'Could not install dependencies' "Done! Dependencies installed."
 }
 
 # Temporarily renames the root config file.
@@ -274,13 +324,7 @@ function configure_database() {
     fi
     # Generate wp-config
     wpcli_core_config
-    # Check exist code
-    if [ $? = 0 ]; then
-        logmsg "Generated $wpconfig file!"
-    else
-        logmsg "Failed to generate $wpconfig! Exiting ..."
-        exit 1
-    fi
+    failing $? 'Could not drop database' "Generated $wpconfig"
 }
 
 # Creates the database
@@ -291,15 +335,12 @@ function create_database() {
         else yes=""
     fi
     wpcli db drop $yes
+    failing $? 'Could not drop database'
     logmsg "Creating database ..."
     wpcli db create
-    # Check exist code
-    if [ $? = 0 ] ; then
-        echo "[${ME}] Finished creating database!"
-    else
-        echo "[${ME}] Failed to create database! Exiting ..."
-        exit 1
-    fi
+    failing $? 'Could not create WP' "Created database!"
+
+    return 
 }
 
 # Installs WordPress in the database.
@@ -307,13 +348,9 @@ function install_wordpress() {
     logmsg "Installing WordPress ..."
     # Install
     wpcli_core_install
-    # Check exit code
-    if [ $? = 0 ] ; then
-        logmsg "Installed WordPress!"
-    else
-        logmsg "Failed to install WordPress! Exiting ..."
-        exit 1
-    fi
+    failing $? "Failed to install WordPress! Exiting ..." "Installed WordPress!"
+
+    return $?
 }
 
 # Updates the WordPress site URL
@@ -322,6 +359,9 @@ function update_wp_siteurl() {
     logmsg "Updating 'siteurl' option ..."
     home=$(get_home_url)
     wpcli option update siteurl "$home/$WP_ROOT"
+    failing $? 'Could not update "siteurl" option'
+
+    return $?
 }
 
 # Generates the local configuration file
@@ -331,7 +371,7 @@ function generate_local_config() {
     logmsg "Generating $lconfig ..."
     home=$(get_home_url)
     printf "<?php \n\ndefine('WP_CONTENT_URL', '$home/app');" > "$lconfig"
-    logmsg "Done!"
+    failing $? 'Could not generate config' "Done!"
 }
 
 # Generates the sensitive data configuration file
@@ -341,7 +381,7 @@ function generate_sensitive_config() {
     local sconfig="$WP_SCONFIG"
     logmsg "Generating $sconfig ..."
     printf "<?php \n\n" > "$sconfig" && sed -n 4,31p "$wpconfig" >> "$sconfig"
-    logmsg "Done!"
+    failing $? 'Could not generate config' "Done!"
 }
 
 # Deletes the wp/wp-config.php file
